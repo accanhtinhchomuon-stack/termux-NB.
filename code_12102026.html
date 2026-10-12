@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGUYEN BAO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sky: '#B3E5FC',
+                        cream: '#FFFDF6',
+                        pastelPink: '#F8C8DC',
+                        butter: '#FFE082',
+                        freshBlue: '#42A5F5',
+                        softGreen: '#81C784',
+                        coralRed: '#FF8A80',
+                        textMain: '#1E293B',
+                        textLight: '#64748B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-soft {
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                box-shadow: 0 10px 30px rgba(66, 165, 245, 0.08);
+            }
+            .btn-soft {
+                box-shadow: 0 8px 20px rgba(66, 165, 245, 0.25);
+                transition: all 0.25s ease;
+                font-weight: 800;
+            }
+            .btn-soft:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 24px rgba(66, 165, 245, 0.35);
+            }
+            .answer-card {
+                transition: all 0.2s ease;
+            }
+            .answer-card:hover:not(.disabled) {
+                border-color: theme('colors.freshBlue');
+                background: rgba(66, 165, 245, 0.08);
+                transform: translateY(-1px);
+            }
+            .answer-card.selected {
+                border-color: theme('colors.freshBlue');
+                background: rgba(66, 165, 245, 0.12);
+            }
+            .answer-card.correct {
+                border-color: theme('colors.softGreen');
+                background: rgba(129, 199, 132, 0.14);
+            }
+            .answer-card.wrong {
+                border-color: theme('colors.coralRed');
+                background: rgba(255, 138, 128, 0.14);
+            }
+            .answer-card.disabled {
+                pointer-events: none;
+                opacity: 0.65;
+            }
+            .progress-bar {
+                transition: width 0.45s ease;
+            }
+            .fade-in {
+                animation: fadeIn 0.45s ease forwards;
+            }
+            .slide-up {
+                animation: slideUp 0.45s ease forwards;
+            }
+            .bounce {
+                animation: bounce 0.5s ease;
+            }
+            .cute-float {
+                animation: cuteFloat 3s ease-in-out infinite;
+            }
+            .cute-float-slow {
+                animation: cuteFloat 4.5s ease-in-out infinite;
+            }
+            .cute-float-delay-1 {
+                animation: cuteFloat 3.5s ease-in-out infinite;
+                animation-delay: 0.8s;
+            }
+            .cute-float-delay-2 {
+                animation: cuteFloat 4s ease-in-out infinite;
+                animation-delay: 1.5s;
+            }
+            .doodle-border {
+                position: relative;
+                overflow: hidden;
+            }
+            .doodle-border::before {
+                content: '';
+                position: absolute;
+                width: 120px;
+                height: 120px;
+                background: radial-gradient(circle, rgba(248, 200, 220, 0.18) 0%, transparent 70%);
+                top: -20px;
+                right: -20px;
+                border-radius: 50%;
+            }
+            .doodle-border::after {
+                content: '';
+                position: absolute;
+                width: 80px;
+                height: 80px;
+                background: radial-gradient(circle, rgba(255, 224, 130, 0.18) 0%, transparent 70%);
+                bottom: -10px;
+                left: -10px;
+                border-radius: 50%;
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        @keyframes cuteFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background: linear-gradient(135deg, #FFFDF6 0%, #E3F2FD 45%, #FFFDF6 100%);
+            color: #1E293B;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-textMain">
+
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-cream/90 backdrop-blur-md border-b border-sky/30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-bold text-lg">NGUYEN BAO</div>
+            <div class="hidden md:flex items-center gap-6 text-sm text-textLight">
+                <a href="#home" class="hover:text-freshBlue transition-colors font-semibold">Trang chủ</a>
+                <a href="#quiz" class="hover:text-freshBlue transition-colors font-semibold">Bắt đầu</a>
+                <a href="#about" class="hover:text-freshBlue transition-colors font-semibold">Giới thiệu</a>
+            </div>
+            <button id="menuToggle" class="md:hidden text-textMain text-xl">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        <div id="mobileMenu" class="md:hidden hidden bg-cream/98 backdrop-blur-md border-t border-sky/30">
+            <div class="container mx-auto px-4 py-3 flex flex-col gap-3 text-sm">
+                <a href="#home" class="py-2 text-textLight hover:text-freshBlue transition-colors font-semibold">Trang chủ</a>
+                <a href="#quiz" class="py-2 text-textLight hover:text-freshBlue transition-colors font-semibold">Bắt đầu</a>
+                <a href="#about" class="py-2 text-textLight hover:text-freshBlue transition-colors font-semibold">Giới thiệu</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-16">
+        <section id="home" class="min-h-screen flex flex-col justify-center py-20 px-4 doodle-border relative overflow-hidden">
+            <!-- Hình bay chậm trang chủ -->
+            <div class="absolute top-12 left-10 cute-float-slow opacity-60">
+                <span class="text-5xl">🍀</span>
+            </div>
+            <div class="absolute top-16 right-12 cute-float-delay-1 opacity-60">
+                <span class="text-4xl">🌸</span>
+            </div>
+            <div class="absolute top-32 left-16 cute-float-delay-2 opacity-50">
+                <span class="text-3xl">🌿</span>
+            </div>
+            <div class="absolute bottom-28 left-10 cute-float-slow opacity-60">
+                <span class="text-5xl">🌷</span>
+            </div>
+            <div class="absolute bottom-20 right-12 cute-float-delay-1 opacity-60">
+                <span class="text-4xl">🌻</span>
+            </div>
+            <div class="absolute bottom-32 right-20 cute-float-delay-2 opacity-50">
+                <span class="text-3xl">☘️</span>
+            </div>
+            <div class="absolute top-40 right-8 cute-float-slow opacity-40">
+                <span class="text-2xl">✨</span>
+            </div>
+            <div class="absolute bottom-40 left-20 cute-float-delay-1 opacity-40">
+                <span class="text-2xl">💫</span>
+            </div>
+
+            <div class="container mx-auto max-w-2xl relative z-10">
+                <div class="text-center mb-6 fade-in" style="animation-delay: 0.1s">
+                    <p class="text-sm text-textLight tracking-widest">FRIENDSHIP QUIZ</p>
+                </div>
+
+                <h1 class="text-[clamp(2rem,5vw,3.2rem)] font-extrabold text-center leading-tight mb-6 fade-in" style="animation-delay: 0.2s">
+                    BẠN HIỂU TÔI ĐẾN ĐÂU?
+                </h1>
+
+                <p class="text-textLight text-center max-w-xl mx-auto mb-8 text-lg fade-in" style="animation-delay: 0.3s">
+                    Bạn nghĩ mình đã hiểu rõ tôi rồi sao? Hãy thử trả lời 10 câu hỏi thú vị để kiểm tra nhé. Biết đâu kết quả sẽ khiến bạn bất ngờ! 🌈
+                </p>
+
+                <div class="flex justify-center mb-10 fade-in" style="animation-delay: 0.4s">
+                    <div class="relative group">
+                        <div class="absolute -inset-2 bg-gradient-to-br from-sky/40 to-pastelPink/40 rounded-2xl blur-md transition-all duration-300 group-hover:blur-lg"></div>
+                        <div class="card-soft rounded-2xl p-5 relative">
+                            <img 
+                                src="logo-nguyenbao.png" 
+                                alt="NGUYEN BAO — FOCUS • CODE • CREATE"
+                                class="max-w-[260px] w-full h-auto mx-auto rounded-xl"
+                                onerror="this.src='https://via.placeholder.com/260x260/FFFDF6/1E293B?text=NGUYEN+BAO'"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center gap-4 md:gap-8 mb-10 fade-in" style="animation-delay: 0.5s">
+                    <div class="card-soft rounded-full px-5 py-2 text-sm text-textMain font-bold">
+                        10 CÂU HỎI 📝
+                    </div>
+                    <div class="card-soft rounded-full px-5 py-2 text-sm text-textMain font-bold">
+                        TRẢ LỜI NGAY 💡
+                    </div>
+                    <div class="card-soft rounded-full px-5 py-2 text-sm text-textMain font-bold">
+                        TỔNG KẾT 🎯
+                    </div>
+                </div>
+
+                <div class="flex justify-center mb-6 fade-in" style="animation-delay: 0.6s">
+                    <button onclick="startQuiz()" class="btn-soft bg-freshBlue text-white px-8 py-4 rounded-full font-extrabold text-lg w-full max-w-xs">
+                        🚀 BẮT ĐẦU THỬ THÁCH
+                    </button>
+                </div>
+
+                <p class="text-center text-sm text-textLight fade-in" style="animation-delay: 0.7s">
+                    Không cần đăng nhập — chỉ cần một chút hiểu biết và thật nhiều tự tin! ✨
+                </p>
+            </div>
+        </section>
+
+        <section id="quiz" class="min-h-screen py-8 px-4 hidden relative">
+            <!-- Hình bay chậm trang câu hỏi -->
+            <div class="absolute top-12 left-8 cute-float-slow opacity-50">
+                <span class="text-3xl">🍀</span>
+            </div>
+            <div class="absolute top-20 right-10 cute-float-delay-1 opacity-50">
+                <span class="text-3xl">🌸</span>
+            </div>
+            <div class="absolute top-36 left-12 cute-float-delay-2 opacity-40">
+                <span class="text-2xl">🌿</span>
+            </div>
+            <div class="absolute bottom-24 left-8 cute-float-slow opacity-50">
+                <span class="text-3xl">🌷</span>
+            </div>
+            <div class="absolute bottom-16 right-10 cute-float-delay-1 opacity-50">
+                <span class="text-3xl">☘️</span>
+            </div>
+            <div class="absolute bottom-32 right-16 cute-float-delay-2 opacity-40">
+                <span class="text-2xl">✨</span>
+            </div>
+
+            <div class="container mx-auto max-w-2xl relative z-10">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-sm font-bold text-textLight">NGUYEN BAO</span>
+                    <span id="questionCounter" class="text-sm font-extrabold text-freshBlue">1 / 10</span>
+                </div>
+
+                <div class="w-full h-3 bg-sky/30 rounded-full mb-8">
+                    <div id="progressBar" class="h-full bg-freshBlue rounded-full progress-bar" style="width: 10%"></div>
+                </div>
+
+                <div id="questionContainer" class="card-soft rounded-2xl p-6 mb-6 slide-up">
+                    <h2 id="questionText" class="text-xl font-bold mb-6">Câu hỏi ở đây</h2>
+                    <div id="answersContainer" class="flex flex-col gap-3"></div>
+                </div>
+
+                <div id="feedbackBox" class="hidden rounded-2xl p-5 mb-6 text-center slide-up"></div>
+
+                <div class="flex justify-between items-center">
+                    <button onclick="confirmExit()" class="text-sm text-textLight hover:text-coralRed transition-colors font-semibold">
+                        <i class="fa fa-sign-out mr-1"></i> Thoát
+                    </button>
+                    <button id="nextBtn" onclick="nextQuestion()" disabled class="btn-soft bg-freshBlue/50 text-white px-6 py-3 rounded-full font-extrabold opacity-50 cursor-not-allowed transition-all text-lg">
+                        ⚡ CÂU TIẾP THEO →
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="result" class="min-h-screen py-20 px-4 hidden relative">
+            <!-- Hình bay chậm trang kết quả -->
+            <div class="absolute top-12 left-10 cute-float-slow opacity-60">
+                <span class="text-5xl">🎉</span>
+            </div>
+            <div class="absolute top-16 right-12 cute-float-delay-1 opacity-60">
+                <span class="text-4xl">🎊</span>
+            </div>
+            <div class="absolute top-32 left-16 cute-float-delay-2 opacity-50">
+                <span class="text-3xl">🌟</span>
+            </div>
+            <div class="absolute bottom-28 left-10 cute-float-slow opacity-60">
+                <span class="text-4xl">🏆</span>
+            </div>
+            <div class="absolute bottom-20 right-12 cute-float-delay-1 opacity-60">
+                <span class="text-4xl">🌻</span>
+            </div>
+            <div class="absolute bottom-32 right-20 cute-float-delay-2 opacity-50">
+                <span class="text-3xl">✨</span>
+            </div>
+            <div class="absolute top-40 right-8 cute-float-slow opacity-40">
+                <span class="text-2xl">💫</span>
+            </div>
+            <div class="absolute bottom-40 left-20 cute-float-delay-1 opacity-40">
+                <span class="text-2xl">🌈</span>
+            </div>
+
+            <div class="container mx-auto max-w-2xl text-center relative z-10">
+                <div class="card-soft rounded-2xl p-8 mb-8 slide-up">
+                    <div class="mb-6">
+                        <img 
+                            src="logo-nguyenbao.png" 
+                            alt="NGUYEN BAO"
+                            class="max-w-[180px] w-full h-auto mx-auto rounded-xl"
+                            onerror="this.src='https://via.placeholder.com/180x180/FFFDF6/1E293B?text=NGUYEN+BAO'"
+                        >
+                    </div>
+
+                    <h2 class="text-2xl font-extrabold mb-2">BẠN ĐÃ HOÀN THÀNH! 🎊</h2>
+                    <p class="text-textLight mb-6">Kết quả thử thách của bạn</p>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-sky/20 rounded-xl p-4">
+                            <p class="text-sm text-textLight font-semibold">Số câu đúng ✅</p>
+                            <p id="correctCount" class="text-3xl font-extrabold text-softGreen">0</p>
+                        </div>
+                        <div class="bg-pastelPink/20 rounded-xl p-4">
+                            <p class="text-sm text-textLight font-semibold">Số câu sai ❌</p>
+                            <p id="wrongCount" class="text-3xl font-extrabold text-coralRed">0</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-butter/20 rounded-xl p-5 mb-6">
+                        <p class="text-sm text-textLight font-semibold">Tổng điểm đạt được 🌟</p>
+                        <p id="finalScore" class="text-5xl font-extrabold text-textMain">0/9</p>
+                        <p id="percentText" class="text-sm text-textLight mt-1 font-semibold">0% câu đúng</p>
+                    </div>
+
+                    <div class="bg-freshBlue/10 rounded-xl p-5 mb-6">
+                        <p id="resultComment" class="text-lg font-bold">Khởi đầu thôi! Thử lại để khám phá nhé.</p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button onclick="restartQuiz()" class="btn-soft bg-freshBlue text-white px-6 py-3 rounded-full font-extrabold w-full sm:w-auto">
+                            🔄 CHƠI LẠI
+                        </button>
+                        <button onclick="shareResult()" class="btn-soft bg-white border-2 border-freshBlue text-freshBlue px-6 py-3 rounded-full font-extrabold w-full sm:w-auto">
+                            📤 CHIA SẺ
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-soft rounded-2xl p-6 slide-up" style="animation-delay: 0.2s">
+                    <h3 class="text-xl font-extrabold mb-3">THIS IS MY OWN CREATION. 💖</h3>
+                    <p class="text-textLight mb-4">
+                        Đây là thử thách do chính tôi xây dựng, mang ý tưởng và dấu ấn riêng của NGUYEN BAO. Bạn có thể tham khảo một giao diện, nhưng để tạo nên phong cách riêng thì cần nhiều hơn việc sao chép.
+                    </p>
+                    <p class="text-lg font-bold text-freshBlue mb-4">
+                        "CÓ THỂ LẤY CẢM HỨNG, NHƯNG ĐỪNG MONG SAO CHÉP ĐƯỢC CHẤT RIÊNG CỦA TÔI!" ✨
+                    </p>
+                    <p class="text-sm font-semibold text-textLight">
+                        NGUYEN BAO • FOCUS • CODE • CREATE 🚀
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="py-20 px-4 border-t border-sky/30 hidden relative">
+            <!-- Hình bay chậm trang giới thiệu -->
+            <div class="absolute top-10 left-12 cute-float-slow opacity-50">
+                <span class="text-4xl">🌻</span>
+            </div>
+            <div class="absolute top-16 right-10 cute-float-delay-1 opacity-50">
+                <span class="text-3xl">🌈</span>
+            </div>
+            <div class="absolute bottom-20 left-10 cute-float-delay-2 opacity-50">
+                <span class="text-3xl">🍀</span>
+            </div>
+            <div class="absolute bottom-12 right-12 cute-float-slow opacity-50">
+                <span class="text-4xl">🌸</span>
+            </div>
+
+            <div class="container mx-auto max-w-2xl relative z-10">
+                <h2 class="text-2xl font-extrabold mb-6 text-center">GIỚI THIỆU 💌</h2>
+                <div class="card-soft rounded-2xl p-6 space-y-4 text-textLight">
+                    <p><strong class="text-textMain font-bold">NGUYEN BAO</strong> — FRIENDSHIP QUIZ là một trang web quiz vui vẻ, được xây dựng để bạn bè có thể cùng nhau khám phá và kiểm tra mức độ hiểu biết về tôi. 🎈</p>
+                    <p>Trang web sử dụng phong cách thiết kế trong sáng, dễ thương và hiện đại, với chức năng phản hồi đúng/sai ngay sau khi bạn chọn đáp án. 💡</p>
+                    <p>Đây là sản phẩm cá nhân, không yêu cầu đăng nhập, không thu thập dữ liệu không cần thiết và có thể chia sẻ link cho bạn bè dễ dàng. 🔗</p>
+                </div>
+                <div class="mt-8 text-center">
+                    <p class="text-sm font-semibold text-textLight">NGUYEN BAO © 2025 • FOCUS • CODE • CREATE ✨</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border-2 border-sky/40 px-6 py-3 rounded-2xl shadow-xl text-sm font-bold opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+        Thông báo
+    </div>
+
+    <script>
+        const QUESTIONS = [
+            { id: "Q01", text: "Tài khoản TikTok được cung cấp cho dự án này là gì?", options: ["@phong278.chuyenxulyphot", "@nguyenbao.tech", "@nb_coding", "@bao.official"], correctAnswer: 0, points: 1 },
+            { id: "Q02", text: "Tôi thường quan tâm đến lĩnh vực nào?", options: ["Công nghệ và lập trình", "Nấu ăn", "Thiết kế thời trang", "Du lịch"], correctAnswer: 0, points: 1 },
+            { id: "Q03", text: "Khi một đoạn code gặp lỗi, tôi nên làm gì trước?", options: ["Đọc thông báo lỗi và kiểm tra nguyên nhân", "Xóa toàn bộ dự án ngay lập tức", "Bỏ qua lỗi", "Đổi điện thoại"], correctAnswer: 0, points: 1 },
+            { id: "Q04", text: "Theo đơn vị hành chính sau sắp xếp năm 2025, Việt Nam có bao nhiêu tỉnh và thành phố trực thuộc Trung ương?", options: ["34", "58", "63", "64"], correctAnswer: 2, points: 1 },
+            { id: "Q05", text: "Thủ đô của Việt Nam là gì?", options: ["Hà Nội", "Huế", "Đà Nẵng", "Cần Thơ"], correctAnswer: 0, points: 1 },
+            { id: "Q06", text: "Việt Nam nằm ở khu vực nào của châu Á?", options: ["Đông Nam Á", "Nam Á", "Tây Á", "Trung Á"], correctAnswer: 0, points: 1 },
+            { id: "Q07", text: "Khi nhận được một đường link lạ, việc nào nên làm trước?", options: ["Kiểm tra nguồn gửi và độ đáng tin cậy", "Nhập mật khẩu ngay", "Tải mọi tệp được đề xuất", "Chia sẻ cho tất cả bạn bè"], correctAnswer: 0, points: 1 },
+            { id: "Q08", text: "Điều gì khiến một tình bạn trở nên tốt đẹp?", options: ["Sự chân thành và tôn trọng lẫn nhau", "Chỉ nói chuyện khi cần giúp đỡ", "Luôn so sánh với người khác", "Bắt bạn phải đồng ý mọi việc"], correctAnswer: 0, points: 1 },
+            { id: "Q09", text: "Một website cá nhân tốt cần điều gì?", options: ["Giao diện rõ ràng và chức năng hoạt động tốt", "Càng nhiều hiệu ứng càng tốt", "Càng nhiều màu càng đẹp", "Không cần quan tâm đến điện thoại"], correctAnswer: 0, points: 1 },
+            { id: "Q10", text: "Bạn tự tin mình đạt bao nhiêu điểm?", options: ["0–3 điểm", "4–6 điểm", "7–8 điểm", "9–10 điểm"], correctAnswer: null, points: 0 }
+        ];
+
+        const COMMENTS = [
+            { min: 0, max: 3, comment: "Khởi đầu thôi! Cố gắng lên nhé 💪" },
+            { min: 4, max: 6, comment: "Không tệ lắm! Bạn hiểu tôi khá đấy 😊" },
+            { min: 7, max: 8, comment: "Rất tốt! Bạn thực sự hiểu tôi nhiều lắm 🌟" },
+            { min: 9, max: 10, comment: "TUYỆT VỜI! Bạn là người hiểu tôi nhất 🎉" }
+        ];
+
+        let currentQuestionIndex = 0, score = 0, correctAnswers = 0, wrongAnswers = 0, selectedAnswerIndex = null, isAnswered = false;
+
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+
+        function showToast(msg, dur = 2500) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.remove('opacity-0');
+            t.classList.add('opacity-100');
+            setTimeout(() => { t.classList.remove('opacity-100'); t.classList.add('opacity-0'); }, dur);
+        }
+
+        function hideAllSections() {
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('quiz').classList.add('hidden');
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('about').classList.add('hidden');
+        }
+
+        function startQuiz() {
+            hideAllSections();
+            document.getElementById('quiz').classList.remove('hidden');
+            resetQuizState();
+            loadQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showResultScreen() {
+            hideAllSections();
+            document.getElementById('result').classList.remove('hidden');
+            displayResults();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuizState() {
+            currentQuestionIndex = 0; score = 0; correctAnswers = 0; wrongAnswers = 0; selectedAnswerIndex = null; isAnswered = false;
+        }
+
+        function loadQuestion() {
+            const q = QUESTIONS[currentQuestionIndex];
+            selectedAnswerIndex = null; isAnswered = false;
+            document.getElementById('questionCounter').textContent = `${currentQuestionIndex + 1} / ${QUESTIONS.length}`;
+            document.getElementById('progressBar').style.width = `${((currentQuestionIndex + 1) / QUESTIONS.length) * 100}%`;
+            document.getElementById('questionText').textContent = `${q.id} — ${q.text}`;
+            const c = document.getElementById('answersContainer'); c.innerHTML = '';
+            q.options.forEach((opt, i) => {
+                const el = document.createElement('div');
+                el.className = 'answer-card border-2 border-textLight/20 rounded-xl p-4 cursor-pointer font-semibold';
+                el.dataset.index = i;
+                el.innerHTML = `<span class="text-freshBlue font-extrabold mr-3">${String.fromCharCode(65 + i)}.</span><span>${opt}</span>`;
+                el.addEventListener('click', () => selectAnswer(i, el));
+                c.appendChild(el);
+            });
+            document.getElementById('feedbackBox').classList.add('hidden');
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = true; nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            nextBtn.textContent = currentQuestionIndex === QUESTIONS.length - 1 ? '✨ HOÀN THÀNH ✨' : '⚡ CÂU TIẾP THEO →';
+        }
+
+        function selectAnswer(index, el) {
+            if (isAnswered) return;
+            const q = QUESTIONS[currentQuestionIndex];
+            selectedAnswerIndex = index; isAnswered = true;
+            document.querySelectorAll('#answersContainer > div').forEach(e => e.classList.add('disabled'));
+            const fb = document.getElementById('feedbackBox');
+            if (q.correctAnswer === null) {
+                el.classList.add('selected');
+                fb.className = 'bg-butter/20 rounded-2xl p-5 mb-6 text-center slide-up';
+                fb.innerHTML = `<p class="text-lg font-extrabold mb-1 text-butter">🌟 CÂU HỎI VUI!</p><p class="text-sm text-textLight font-semibold">Câu này không tính điểm, hãy tự tin với lựa chọn của mình!</p>`;
+                fb.classList.remove('hidden');
+            } else if (selectedAnswerIndex === q.correctAnswer) {
+                score += q.points; correctAnswers++;
+                el.classList.add('correct', 'bounce');
+                fb.className = 'bg-softGreen/20 rounded-2xl p-5 mb-6 text-center slide-up';
+                fb.innerHTML = `<p class="text-lg font-extrabold mb-1 text-softGreen">✅ CHÍNH XÁC! 🎉</p><p class="text-sm text-textLight font-semibold">Tuyệt vời! Bạn đã chọn đúng đáp án.</p>`;
+                fb.classList.remove('hidden');
+            } else {
+                wrongAnswers++;
+                el.classList.add('wrong');
+                document.querySelector(`#answersContainer > div[data-index="${q.correctAnswer}"]`).classList.add('correct');
+                fb.className = 'bg-coralRed/20 rounded-2xl p-5 mb-6 text-center slide-up';
+                fb.innerHTML = `<p class="text-lg font-extrabold mb-1 text-coralRed">❌ CHƯA ĐÚNG RỒI!</p><p class="text-sm text-textLight font-semibold">Không sao cả, cố gắng hơn ở câu tiếp theo nhé 💪</p>`;
+                fb.classList.remove('hidden');
+            }
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = false; nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function nextQuestion() {
+            if (!isAnswered) return;
+            if (currentQuestionIndex < QUESTIONS.length - 1) { currentQuestionIndex++; loadQuestion(); }
+            else showResultScreen();
+        }
+
+        function confirmExit() {
+            if (confirm('Bạn có chắc muốn thoát? Tiến độ sẽ bị mất 😊')) { hideAllSections(); document.getElementById('home').classList.add('hidden'); }
+        }
+
+        function getComment(total) {
+            return COMMENTS.find(c => total >= c.min && total <= c.max) || COMMENTS[0];
+        }
+
+        function displayResults() {
+            const max = QUESTIONS.reduce((s, q) => s + q.points, 0);
+            const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+            const cmt = getComment(score);
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('wrongCount').textContent = wrongAnswers;
+            document.getElementById('finalScore').textContent = `${score}/${max}`;
+            document.getElementById('percentText').textContent = `${pct}% câu đúng`;
+            document.getElementById('resultComment').textContent = cmt.comment;
+        }
+
+        function shareResult() {
+            const max = QUESTIONS.reduce((s, q) => s + q.points, 0);
+            const txt = `Tôi vừa hoàn thành NGUYEN BAO — FRIENDSHIP QUIZ và đạt ${score}/${max} điểm 🌟 Bạn có tự tin làm tốt hơn không?\n${window.location.href}`;
+            if (navigator.share) navigator.share({ title: `NGUYEN BAO — Kết quả: ${score}/${max} 🌟`, text: txt }).catch(() => copy(txt));
+            else copy(txt);
+        }
+
+        function copy(t) {
+            navigator.clipboard.writeText(t).then(() => showToast('✅ Đã sao chép liên kết!')).catch(() => showToast('❌ Không thể sao chép.'));
+        }
+
+        function restartQuiz() {
+            hideAllSections();
+            document.getElementById('home').classList.remove('hidden');
+            showToast('🔄 Sẵn sàng thử thách lại! Chúc bạn làm tốt hơn 😊');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { hideAllSections(); document.getElementById('home').classList.remove('hidden'); });
+    </script>
+</body>
+</html>
